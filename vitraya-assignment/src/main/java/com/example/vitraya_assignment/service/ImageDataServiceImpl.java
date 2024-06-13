@@ -18,6 +18,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.logging.Logger;
 
 @Service
 public class ImageDataServiceImpl implements ImageDataService {
@@ -27,6 +28,8 @@ public class ImageDataServiceImpl implements ImageDataService {
 
   @Value("${tesseract.data.path}")
   private String tesseractDataPath;
+
+  private static final Logger LOGGER = Logger.getLogger(ImageDataServiceImpl.class.getName());
 
   @Override
   public ImageData uploadImage(MultipartFile file) {
@@ -45,6 +48,7 @@ public class ImageDataServiceImpl implements ImageDataService {
 
       return imageDataRepository.save(imageDataEntity);
     } catch (IOException e) {
+      LOGGER.severe("Failed to upload image: " + e.getMessage());
       throw new RuntimeException("Failed to upload image: " + e.getMessage(), e);
     }
   }
@@ -71,7 +75,11 @@ public class ImageDataServiceImpl implements ImageDataService {
 
       BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
       return tesseract.doOCR(bufferedImage);
-    } catch (IOException | TesseractException e) {
+    } catch (IOException e) {
+      LOGGER.severe("Failed to read image input stream: " + e.getMessage());
+      throw new RuntimeException("Failed to read image input stream: " + e.getMessage(), e);
+    } catch (TesseractException e) {
+      LOGGER.severe("Failed to perform OCR: " + e.getMessage());
       throw new RuntimeException("Failed to perform OCR: " + e.getMessage(), e);
     }
   }

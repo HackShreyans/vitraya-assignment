@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/images")
@@ -17,12 +18,15 @@ public class ImageDataController {
   @Autowired
   private ImageDataService imageDataService;
 
+  private static final Logger LOGGER = Logger.getLogger(ImageDataController.class.getName());
+
   @PostMapping("/upload")
   public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
     try {
       ImageData savedImageData = imageDataService.uploadImage(file);
       return ResponseEntity.status(HttpStatus.CREATED).body(savedImageData);
     } catch (RuntimeException e) {
+      LOGGER.severe("Failed to upload image: " + e.getMessage());
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
   }
@@ -33,6 +37,7 @@ public class ImageDataController {
       List<ImageData> imageDataList = imageDataService.getAllImageData();
       return ResponseEntity.ok(imageDataList);
     } catch (RuntimeException e) {
+      LOGGER.severe("Failed to retrieve images: " + e.getMessage());
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
   }
@@ -43,6 +48,7 @@ public class ImageDataController {
       ImageData imageData = imageDataService.getImageDataById(id);
       return ResponseEntity.ok(imageData);
     } catch (RuntimeException e) {
+      LOGGER.severe("Image not found: " + e.getMessage());
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
   }
